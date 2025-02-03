@@ -6,7 +6,28 @@
         { "src": "*.js", "use": "@vercel/static" }
     ],
     "routes": [
-        { "src": "/api/socket", "dest": "/api/socket.js" },
+        {
+            "src": "/api/socket",
+            "dest": "/api/socket.js",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        },
+        {
+            "src": "/api/socket/(.*)",
+            "dest": "/api/socket.js",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        },
         { "src": "/(.*)", "dest": "/$1" }
     ]
 } 
