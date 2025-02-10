@@ -56,6 +56,9 @@ jobs:
         cd deploy
         npm ci --only=production
 
+    - name: Azure Login
+      uses: Azure/login@v2.2.0
+
     - name: Upload artifact for deployment
       uses: actions/upload-artifact@v4
       with:
