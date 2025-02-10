@@ -1,5 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const phasermsg = () => {
     return {
@@ -41,6 +45,8 @@ export default defineConfig({
             format: {
                 comments: false
             }
-        }
+        },
+        outDir: path.resolve(__dirname, '../server/public'),
+        emptyOutDir: true
     }
 });

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+server/public/*
+!server/public/.gitkeep
+server/dist/

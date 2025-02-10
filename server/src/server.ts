@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { randomBytes } from 'crypto';
@@ -25,6 +26,14 @@ interface GameRoom {
 }
 
 const gameRooms = new Map<string, GameRoom>();
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Handle client-side routing by serving index.html for all routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
