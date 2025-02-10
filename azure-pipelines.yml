@@ -1,0 +1,98 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- main
+
+variables:
+  NODE_VERSION: '22.x'
+  CLIENT_OUTPUT_PATH: 'dist'
+  SERVER_OUTPUT_PATH: 'server/dist'
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '$(NODE_VERSION)'
+  displayName: 'Install Node.js'
+
+- script: |
+    echo "Installing client dependencies..."
+    npm ci
+    echo "Building client..."
+    npm run build
+    echo "Client build completed"
+  displayName: 'Build Client'
+
+- script: |
+    echo "Moving to server directory..."
+    cd server
+    echo "Installing server dependencies..."
+    npm ci
+    echo "Building server..."
+    npm run build
+    echo "Server build completed"
+    
+    # Copy necessary files to deployment directory
+    echo "Preparing deployment package..."
+    mkdir -p deploy
+    cp -r dist/* deploy/
+    cp -r public deploy/
+    cp package.json deploy/
+    cp package-lock.json deploy/
+    cp web.config deploy/
+    
+    # Create package.json with correct start script
+    echo '{
+      "name": "pong-server",
+      "version": "1.0.0",
+      "main": "dist/server.js",
+      "scripts": {
+        "start": "node dist/server.js"
+      },
+      "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.8.1"
+      }
+    }' > deploy/package.json
+    
+    # Install production dependencies in deployment directory
+    cd deploy
+    npm ci --only=production
+
+    # Debug: List contents of deployment directory
+    echo "Deployment directory contents:"
+    ls -la
+    echo "Dist directory contents:"
+    ls -la dist/
+  displayName: 'Prepare Server'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/server/deploy'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+  displayName: 'Archive Files'  
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish Artifacts'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Pay-As-You-Go(f27929c7-70db-4b90-8995-cd0031f385ac)'
+    appType: 'webAppLinux'
+    appName: 'pong'
+    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    startUpCommand: 'npm start'
+    appSettings: '-WEBSITES_PORT 8080 -WEBSITE_NODE_DEFAULT_VERSION 22.x -NODE_ENV production'
+  displayName: 'Deploy to Azure Web App' 
