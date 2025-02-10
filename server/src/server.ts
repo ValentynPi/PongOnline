@@ -8,7 +8,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:8080"], // Allow both Vite and dev server ports
+        origin: process.env.NODE_ENV === 'production' 
+            ? ["https://*.azurewebsites.net"] 
+            : ["http://localhost:5173", "http://localhost:8080"],
         methods: ["GET", "POST"],
         credentials: true
     }

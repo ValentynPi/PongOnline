@@ -1,0 +1,70 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22.x'
+  CLIENT_OUTPUT_PATH: 'dist'
+  SERVER_OUTPUT_PATH: 'server/dist'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Build Client
+      run: |
+        echo "Installing client dependencies..."
+        npm ci
+        echo "Building client..."
+        npm run build
+        echo "Client build completed"
+
+    - name: Prepare Server
+      run: |
+        echo "Moving to server directory..."
+        cd server
+        echo "Installing server dependencies..."
+        npm ci
+        echo "Building server..."
+        npm run build
+        echo "Server build completed"
+        
+        # Copy necessary files to deployment directory
+        echo "Preparing deployment package..."
+        mkdir -p deploy
+        cp -r dist/* deploy/
+        cp -r public deploy/
+        cp package.json deploy/
+        cp package-lock.json deploy/
+        cp web.config deploy/
+        
+        # Install production dependencies in deployment directory
+        cd deploy
+        npm ci --only=production
+
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v4
+      with:
+        name: node-app
+        path: server/deploy
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: server/deploy 
