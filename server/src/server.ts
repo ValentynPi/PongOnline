@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { randomBytes } from 'crypto';
@@ -7,7 +8,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:8080"], // Allow both Vite and dev server ports
+        origin: process.env.NODE_ENV === 'production' 
+            ? ["https://*.azurewebsites.net"] 
+            : ["http://localhost:5173", "http://localhost:8080"],
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -25,6 +28,14 @@ interface GameRoom {
 }
 
 const gameRooms = new Map<string, GameRoom>();
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Handle client-side routing by serving index.html for all routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
@@ -134,7 +145,7 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, () => {
+const PORT = Number(process.env.PORT || process.env.WEBSITES_PORT || 8080);
+httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 }); 
