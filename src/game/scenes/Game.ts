@@ -219,8 +219,8 @@ export class PongGame extends Scene {
         body.setCollideWorldBounds(true);
         
         // Debug visualization of physics body
-        const debugRect = this.add.rectangle(0, 0, physicsWidth-2, paddleHeight, 0xff0000, 0.3);
-        container.add(debugRect);
+        //const debugRect = this.add.rectangle(0, 0, physicsWidth-2, paddleHeight, 0xff0000, 0.3);
+        //container.add(debugRect);
         
         return container;
     }

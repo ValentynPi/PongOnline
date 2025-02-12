@@ -98,9 +98,8 @@ export class OnlineLobby extends Scene {
             const isLeftPlayer = data.leftPlayer === this.socket?.id;
             this.statusText.setText('Game starting...');
             
-            // Start the game scene with the appropriate player role
-            this.scene.start('Game', {
-                mode: 'online',
+            // Start the online game scene with the appropriate player role
+            this.scene.start('OnlineGame', {
                 socket: this.socket,
                 roomCode: this.roomCode,
                 isLeftPlayer: isLeftPlayer

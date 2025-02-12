@@ -3,6 +3,8 @@ import { GameOver } from './scenes/GameOver';
 import { PongGame } from './scenes/Game';
 import { MainMenu } from './scenes/MainMenu';
 import { OnlineLobby } from './scenes/OnlineLobby';
+import { BotGame } from './scenes/BotGame';
+import { OnlineGame } from './scenes/OnlineGame';
 import { AUTO, Game } from 'phaser';
 import { Preloader } from './scenes/Preloader';
 
@@ -13,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 800,
     height: 600,
     parent: 'game',
-    backgroundColor: '#028af8',
+    backgroundColor: '#000000',
     physics: {
         default: 'arcade',
         arcade: {
@@ -23,17 +25,22 @@ const config: Phaser.Types.Core.GameConfig = {
     },
     scene: [
         Boot,
+        Preloader,
         MainMenu,
         PongGame,
+        BotGame,
+        OnlineGame,
         GameOver,
         OnlineLobby
     ]
 };
 
+// For debugging
+console.log('Available scenes:', [Boot, Preloader, MainMenu, PongGame, BotGame, OnlineGame, GameOver, OnlineLobby].map(scene => scene.name));
+
 const StartGame = (parent: string) => {
-
     return new Game({ ...config, parent });
-
 }
+
 export default StartGame;
 
